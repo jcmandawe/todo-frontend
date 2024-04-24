@@ -1,0 +1,29 @@
+<div class="container">
+  <div class="row">
+    <h2>Todo List</h2>
+    <div class="col-4">
+      <button routerLink="/add-todo" class="btn btn-success mb-3">Add Todo</button>
+    </div>
+    <table class="table table-striped">
+      <thead>
+        <tr>
+          <th>Title</th>
+          <th>Description</th>
+          <th>Completed</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let t of todo">
+          <td>{{ t.title }}</td>
+          <td>{{ t.description }}</td>
+          <td>{{ t.completed ? "Yes" : "No" }}</td>
+          <td>
+            <a [routerLink]="['/edit-todo', t._id]" class="btn btn-primary btn-sm mx-1">Edit</a>
+            <button (click)="deleteTodo(t._id)" class="btn btn-danger btn-sm mx-1">Delete</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>

@@ -1,6 +1,6 @@
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { Observable } from 'rxjs';
+import { Observable, catchError, lastValueFrom, throwError } from 'rxjs';
 
 @Injectable({
   providedIn: 'root',
@@ -8,25 +8,37 @@ import { Observable } from 'rxjs';
 export class ApiService {
   private API_URL = 'http://localhost:3000';
 
-  constructor(private http: HttpClient) {}
+  constructor(private httpClient: HttpClient) {}
 
-  create<T>(uri: string, data: T): Observable<T> {
-    return this.http.post<T>(`${this.API_URL}/${uri}`, data);
+  get headers() {
+    return { headers: { 'Content-Type': 'application/json' } };
   }
 
-  get<T>(uri: string): Observable<T> {
-    return this.http.get<T>(`${this.API_URL}/${uri}`);
+  async create<T>(uri: string, data: T): Promise<T> {
+    return await this.handlePromiseRequest<T>(this.httpClient.post<T>(`${this.API_URL}/${uri}`, data, this.headers));
   }
 
-  getById<T>(uri: string, id: string): Observable<T> {
-    return this.http.get<T>(`${this.API_URL}/${uri}/${id}`);
+  async get<T>(uri: string): Promise<T> {
+    return await this.handlePromiseRequest<T>(this.httpClient.get<T>(`${this.API_URL}/${uri}`, this.headers));
   }
 
-  update<T>(uri: string, id: string, data: T): Observable<T> {
-    return this.http.patch<T>(`${this.API_URL}/${uri}/${id}`, data);
+  async getById<T>(uri: string, id: string): Promise<T> {
+    return await this.handlePromiseRequest<T>(this.httpClient.get<T>(`${this.API_URL}/${uri}/${id}`, this.headers));
   }
 
-  delete<T>(uri: string, id: string): Observable<T> {
-    return this.http.delete<T>(`${this.API_URL}/${uri}/${id}`);
+  async update<T>(uri: string, id: string, data: T): Promise<T> {
+    return await this.handlePromiseRequest<T>(this.httpClient.patch<T>(`${this.API_URL}/${uri}/${id}`, data, this.headers));
+  }
+
+  async delete<T>(uri: string, id: string): Promise<T> {
+    return await this.handlePromiseRequest<T>(this.httpClient.delete<T>(`${this.API_URL}/${uri}/${id}`, this.headers));
+  }
+
+  private handlePromiseRequest<T>(request: Observable<T>): Promise<T> {
+    return lastValueFrom(request.pipe(catchError(this.handleError)));
+  }
+
+  private handleError(error: HttpErrorResponse): Observable<never> {
+    return throwError(() => error);
   }
 }
